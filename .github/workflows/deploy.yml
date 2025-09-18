@@ -1,0 +1,36 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]   # 每次 push 到 main 就触发
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 拉取源码
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. 装 Node
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'          # 缓存 node_modules，提速
+
+      # 3. 装依赖
+      - name: Install
+        run: npm ci              # ci 比 install 更快更干净
+
+      # 4. 构建
+      - name: Build
+        run: npm run build
+
+      # 5. 把 dist 目录推到 gh-pages 分支
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # 自动生成的令牌
+          publish_dir: ./dist                        # 构建产物目录
